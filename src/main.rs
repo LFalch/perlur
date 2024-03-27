@@ -31,7 +31,7 @@ struct Args {
     /// The algorithm to calculate distance between palette colours and colours in the source image
     /// used to determine the output colour
     distance: DistanceMeasure,
-    #[arg(long = "filter", default_value = "catmull_rom")]
+    #[arg(long = "filter", default_value = "catmull-rom")]
     /// Method with which to downscale the image `BEAD_DENSITY` times
     downscale_filter: DownscaleFilter,
 
