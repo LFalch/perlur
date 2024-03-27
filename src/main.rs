@@ -1,7 +1,8 @@
 use std::{
-    fs::File,
     io::{BufRead, BufReader},
+    fs::File,
     path::{Path, PathBuf},
+    mem::swap,
 };
 
 use clap::Parser;
@@ -35,6 +36,10 @@ struct Args {
     /// Method with which to downscale the image `BEAD_DENSITY` times
     downscale_filter: DownscaleFilter,
 
+    /// Should the output be mirrored
+    #[arg(short, long)]
+    mirror: bool,
+
     #[arg(short, long, default_value = "palette.txt")]
     /// Path to palette file formatted as lines of a colour name, a space and then the RGB hex value of the colour
     palette: PathBuf,
@@ -51,6 +56,7 @@ fn main() {
         output_scale,
         distance,
         downscale_filter,
+        mirror,
         palette,
         perla,
     } = Args::parse();
@@ -58,13 +64,24 @@ fn main() {
 
     let palette = read_palette(&palette);
 
-    let (frequency, beads) = create_beads(
+    let (frequency, mut beads) = create_beads(
         &input_img,
         bead_density,
         &palette,
         distance,
         downscale_filter,
     );
+
+    if mirror {
+        for mut row in beads.rows_mut() {
+            loop {
+                match (row.next(), row.next_back()) {
+                    (Some(first), Some(last)) => swap(first, last),
+                    _ => break,
+                }
+            }
+        }
+    }
 
     let mut total_pearls = 0;
     for (name, pearls) in frequency {
